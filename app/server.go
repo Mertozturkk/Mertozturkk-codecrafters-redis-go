@@ -1,16 +1,16 @@
 package main
 
 import (
-	"errors"
+	"bufio"
 	"fmt"
-	"io"
 	"log"
 	"net"
+	"strings"
 )
 
 func main() {
 
-	l, err := net.Listen("tcp", "localhost:6379")
+	l, err := net.Listen("tcp", "localhost:6378")
 	if err != nil {
 		fmt.Println("Error", err)
 		return
@@ -29,22 +29,51 @@ func main() {
 	}
 }
 
+type Request struct {
+	Command string
+	Args    []string
+}
+
 func handleConnection(conn net.Conn) {
 	defer conn.Close()
-	for {
-		buf := make([]byte, 2048)
-		n, err := conn.Read(buf)
-		if err != nil {
-			return
+	scanner := bufio.NewScanner(conn)
+	for scanner.Scan() {
+		requestStr := scanner.Text()
+		requestParts := strings.Fields(requestStr)
+		if len(requestParts) == 0 {
+			continue
 		}
-		// fmt.Println("Received int", n)
-		receiveMessage := string(buf[:n])
-		log.Printf("Received Data %s", receiveMessage)
-		if errors.Is(err, io.EOF) {
-			return
+
+		command := requestParts[0]
+		parameters := []string{}
+		if len(requestParts) > 1 {
+			parameters = requestParts[1:]
 		}
-		
-		conn.Write([]byte("+PONG\r\n"))
+
+		request := Request{
+			Command: command,
+			Args:    parameters,
+		}
+
+		response := createResponse(request)
+
+		conn.Write([]byte(response + "\r\n"))
+	}
+
+	if err := scanner.Err(); err != nil {
+		log.Println("Error reading from connection: ", err)
+		return
+	}
+}
+
+func createResponse(request Request) string {
+	switch request.Command {
+	case "echo":
+		return strings.Join(request.Args, " ")
+	case "ping":
+		return "PONG"
+	default:
+		return "-ERR unknown command"
 	}
 
 }
