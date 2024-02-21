@@ -28,8 +28,10 @@ func main() {
 
 func handleConnection(conn net.Conn) {
 	defer conn.Close()
-	msg := []byte("+PONG\r\n")
+	for {
+		msg := []byte("+PONG\r\n")
 
-	conn.Write(msg)
+		conn.Write(msg)
+	}
 
 }
