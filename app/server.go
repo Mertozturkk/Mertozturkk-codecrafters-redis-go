@@ -55,9 +55,8 @@ func handleConnection(conn net.Conn) {
 			Args:    parameters,
 		}
 
-		response := createResponse(request)
+		createResponse(request, conn)
 
-		conn.Write([]byte(response + "\r\n"))
 	}
 
 	if err := scanner.Err(); err != nil {
@@ -66,14 +65,14 @@ func handleConnection(conn net.Conn) {
 	}
 }
 
-func createResponse(request Request) string {
+func createResponse(request Request, conn net.Conn) {
 	switch request.Command {
 	case "echo":
-		return strings.Join(request.Args, " ")
+		conn.Write([]byte(strings.Join(request.Args, " ")))
 	case "ping":
-		return "PONG"
+		conn.Write([]byte("+PONG\r\n"))
 	default:
-		return "-ERR unknown command"
+		conn.Write([]byte("+OK\r\n"))
 	}
 
 }
