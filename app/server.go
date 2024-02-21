@@ -1,8 +1,9 @@
 package main
 
 import (
-	"bufio"
+	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"strings"
@@ -36,43 +37,38 @@ type Request struct {
 
 func handleConnection(conn net.Conn) {
 	defer conn.Close()
-	scanner := bufio.NewScanner(conn)
-	for scanner.Scan() {
-		requestStr := scanner.Text()
-		requestParts := strings.Fields(requestStr)
-		if len(requestParts) == 0 {
-			continue
+	for {
+		buf := make([]byte, 2048)
+		n, err := conn.Read(buf)
+		if err != nil {
+			return
 		}
+		receiveMessage := string(buf[:n])
 
-		command := requestParts[0]
+		log.Printf("Received Data %s", receiveMessage)
+		if errors.Is(err, io.EOF) {
+			return
+		}
+		formattedData := strings.Split(string(receiveMessage), "\r\n")[0]
+
+		splittedMessage := strings.Split(formattedData, " ")
+		command := splittedMessage[0]
 		parameters := []string{}
-		if len(requestParts) > 1 {
-			parameters = requestParts[1:]
+		if len(splittedMessage) > 1 {
+			parameters = splittedMessage[1:]
 		}
-
+		//
 		request := Request{
 			Command: command,
 			Args:    parameters,
 		}
-
-		createResponse(request, conn)
+		switch request.Command {
+		case "echo":
+			data := strings.Join(request.Args, "\r\n") + "\r\n"
+			conn.Write([]byte(data))
+		case "ping":
+			conn.Write([]byte("PONG\r\n"))
+		}
 
 	}
-
-	if err := scanner.Err(); err != nil {
-		log.Println("Error reading from connection: ", err)
-		return
-	}
-}
-
-func createResponse(request Request, conn net.Conn) {
-	switch request.Command {
-	case "echo":
-		conn.Write([]byte(strings.Join(request.Args, " ")))
-	case "ping":
-		conn.Write([]byte("+PONG\r\n"))
-	default:
-		conn.Write([]byte("+OK\r\n"))
-	}
-
 }
