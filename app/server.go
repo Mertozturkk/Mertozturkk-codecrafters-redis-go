@@ -10,7 +10,7 @@ import (
 
 func main() {
 
-	l, err := net.Listen("tcp", "localhost:6378")
+	l, err := net.Listen("tcp", "localhost:6379")
 	if err != nil {
 		fmt.Println("Error", err)
 		return
