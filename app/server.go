@@ -43,6 +43,7 @@ func handleConnection(conn net.Conn) {
 		if errors.Is(err, io.EOF) {
 			return
 		}
+		
 		conn.Write([]byte("+PONG\r\n"))
 	}
 
