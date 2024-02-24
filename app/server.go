@@ -53,7 +53,7 @@ func handleConnection(conn net.Conn) {
 
 		switch cmd {
 		case echo:
-			joinedData := strings.Join(data, " ")
+			joinedData := strings.Join(data, "\r\n")
 			conn.Write([]byte(joinedData))
 		case "ping":
 			conn.Write([]byte("+PONG\r\n"))
