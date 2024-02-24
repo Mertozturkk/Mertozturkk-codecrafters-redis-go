@@ -56,7 +56,7 @@ func handleConnection(conn net.Conn) {
 			joinedData := strings.Join(data, " ")
 			conn.Write([]byte(joinedData))
 		case "ping":
-			conn.Write([]byte("PONG\r\n"))
+			conn.Write([]byte("+PONG\r\n"))
 		}
 	}
 }
