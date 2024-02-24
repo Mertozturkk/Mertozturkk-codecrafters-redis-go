@@ -1,11 +1,9 @@
 package main
 
 import (
-	"errors"
 	"fmt"
-	"io"
-	"log"
 	"net"
+	"strconv"
 	"strings"
 )
 
@@ -35,6 +33,12 @@ type Request struct {
 	Args    []string
 }
 
+const (
+	Array = '*'
+	Bulk  = '$'
+	echo  = "echo"
+)
+
 func handleConnection(conn net.Conn) {
 	defer conn.Close()
 	for {
@@ -44,31 +48,44 @@ func handleConnection(conn net.Conn) {
 			return
 		}
 		receiveMessage := string(buf[:n])
+		arr := StringParser(receiveMessage)
+		cmd, data := ArrayReader(arr)
 
-		log.Printf("Received Data %s", receiveMessage)
-		if errors.Is(err, io.EOF) {
-			return
-		}
-		formattedData := strings.Split(string(receiveMessage), "\r\n")[0]
-
-		splittedMessage := strings.Split(formattedData, " ")
-		command := splittedMessage[0]
-		parameters := []string{}
-		if len(splittedMessage) > 1 {
-			parameters = splittedMessage[1:]
-		}
-		//
-		request := Request{
-			Command: command,
-			Args:    parameters,
-		}
-		switch request.Command {
-		case "echo":
-			data := strings.Join(request.Args, "\r\n") + "\r\n"
-			conn.Write([]byte(data))
+		switch cmd {
+		case echo:
+			joinedData := strings.Join(data, " ")
+			conn.Write([]byte(joinedData))
 		case "ping":
 			conn.Write([]byte("PONG\r\n"))
 		}
-
 	}
+}
+
+func StringParser(s string) []string {
+	var arr []string
+	parseredData := strings.Split(s, "\r\n")
+	for i := 0; i < len(parseredData); i++ {
+		arr = append(arr, parseredData[i])
+	}
+	return arr
+}
+
+func ArrayReader(arr []string) (string, []string) {
+	var data []string
+	cmd := arr[2]
+	for i := 3; i < len(arr); i++ {
+		element := arr[i]
+		if element == "" {
+			continue
+		}
+		type_ := element[0]
+		if strconv.Itoa(int(type_)) == "" {
+			continue
+		}
+		if type_ == Bulk {
+			continue
+		}
+		data = append(data, element)
+	}
+	return cmd, data
 }
