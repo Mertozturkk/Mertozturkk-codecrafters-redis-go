@@ -67,7 +67,7 @@ func handleConnection(conn net.Conn, store *storage.Store) {
 			conn.Write([]byte("+OK\r\n"))
 
 		case models.Get:
-			value, ok := store.Get(cliData.Data[1])
+			value, ok := store.Get(cliData.Data[0])
 			if ok {
 				conn.Write([]byte("+" + value + "\r\n"))
 			} else {
