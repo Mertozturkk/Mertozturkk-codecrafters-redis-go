@@ -64,7 +64,7 @@ func handleConnection(conn net.Conn, store *storage.Store) {
 				fmt.Println("Error:", err)
 				return
 			}
-			conn.Write([]byte("+gOK\r\n"))
+			conn.Write([]byte("+OK\r\n"))
 
 		case models.Get:
 			value, ok := store.Get(cliData.Data[1])
