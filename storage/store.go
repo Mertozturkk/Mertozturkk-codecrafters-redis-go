@@ -13,8 +13,6 @@ type Store struct {
 	Lock     sync.Mutex
 }
 
-var KeyValues = make(map[string]string)
-
 func NewStore(initialKey, initialValue string) *Store {
 	return &Store{
 		KeyValue: map[string]string{initialKey: initialValue},
@@ -25,6 +23,7 @@ func NewStore(initialKey, initialValue string) *Store {
 func (s *Store) Set(key string, value string, duration time.Duration) error {
 	s.Lock.Lock()
 	defer s.Lock.Unlock()
+
 	if len(key) == 0 {
 		return errors.New("key cannot be empty")
 	}
@@ -32,13 +31,22 @@ func (s *Store) Set(key string, value string, duration time.Duration) error {
 	expiry := time.Now().Add(duration)
 	s.KeyValue[key] = value
 	s.Expiry[key] = expiry
-	fmt.Printf("Key: %v, Value: %v, Expiry: %v\n", key, value, expiry)
+	fmt.Println("Key:", key, "Value:", value, "Expiry:", expiry)
 
 	return nil
 }
+
 func (s *Store) Get(key string) (string, bool) {
 	s.Lock.Lock()
 	defer s.Lock.Unlock()
-	val, ok := s.KeyValue[key]
-	return val, ok
+
+	expiry, ok := s.Expiry[key]
+	if !ok || expiry.Before(time.Now()) {
+		delete(s.KeyValue, key)
+		delete(s.Expiry, key)
+		return "", false
+	}
+
+	val := s.KeyValue[key]
+	return val, true
 }
