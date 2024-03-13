@@ -9,7 +9,7 @@ import (
 
 func ArrayReader(arr string, processCount int) (models.CliData, error) {
 	var data []string
-	var setTime time.Duration
+	setTime := 100 * time.Millisecond
 	var cmd string
 
 	parsedData := strings.Split(arr, "\r\n")
