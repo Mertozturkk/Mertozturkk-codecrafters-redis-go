@@ -71,7 +71,7 @@ func handleConnection(conn net.Conn, store *storage.Store) {
 			if ok {
 				conn.Write([]byte("+" + value + "\r\n"))
 			} else {
-				conn.Write([]byte("+$-1\r\n"))
+				conn.Write([]byte("$-1\r\n"))
 			}
 		}
 
