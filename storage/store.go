@@ -25,7 +25,6 @@ func NewStore(initialKey, initialValue string) *Store {
 func (s *Store) Set(key string, value string, duration time.Duration) error {
 	s.Lock.Lock()
 	defer s.Lock.Unlock()
-	duration = 1000 * time.Second
 	if len(key) == 0 {
 		return errors.New("key cannot be empty")
 	}
