@@ -59,12 +59,12 @@ func handleConnection(conn net.Conn, store *storage.Store) {
 			conn.Write([]byte("+PONG\r\n"))
 
 		case models.Set:
-			err := store.Set(cliData.Data[1], cliData.Data[2], cliData.Timer)
+			err := store.Set(cliData.Data[0], cliData.Data[1], cliData.Timer)
 			if err != nil {
 				fmt.Println("Error:", err)
 				return
 			}
-			conn.Write([]byte("+OK\r\n"))
+			conn.Write([]byte("+gOK\r\n"))
 
 		case models.Get:
 			value, ok := store.Get(cliData.Data[1])
