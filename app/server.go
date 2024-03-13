@@ -51,7 +51,7 @@ func handleConnection(conn net.Conn, store *storage.Store) {
 
 		switch cmd {
 		case models.Echo:
-			joinedData := strings.Join(cliData.Data, "\r\n")
+			joinedData := strings.Join(cliData.Data, " ")
 			joinedData += "\r\n"
 			conn.Write([]byte("+" + joinedData))
 

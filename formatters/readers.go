@@ -23,6 +23,7 @@ func ArrayReader(arr string, processCount int) (models.CliData, error) {
 
 		if _, ok := models.Commands[element]; ok {
 			cmd = element
+			continue
 		}
 
 		if element == models.Px {
