@@ -84,13 +84,18 @@ func StartNetManager(manager *NetManager, store *storage.Store) {
 	fmt.Println("Server listening on ", (*manager.listener).Addr().String())
 
 	for {
+		fmt.Println("Waiting for connection")
 		conn, err := (*manager.listener).Accept()
+		fmt.Println("Connection accepted")
 		if err != nil {
 			fmt.Println("Error", err)
 			continue
 		}
+		fmt.Println("Creating new client")
 		client := NewClient(manager, conn)
+		fmt.Println("Registering client")
 		manager.register <- client
+		fmt.Println("Handling connection")
 		go HandleConnection(client, store)
 	}
 }
@@ -105,15 +110,19 @@ func HandleConnection(client *Client, store *storage.Store) {
 			return
 		}
 		receiveMessage := string(buf[:n])
-
+		fmt.Println("Received Data", receiveMessage)
 		cliData, err := formatters.StringParser(receiveMessage)
 		if err != nil {
 			fmt.Println(err)
 			continue
 		}
 		cmd := cliData.Command
+		fmt.Println("Command", cmd)
 
 		switch cmd {
+		case models.INFO:
+			fmt.Println("INFO")
+			client.connection.Write([]byte("$11\r\nrole:master\r\n"))
 		case models.Echo:
 			joinedData := strings.Join(cliData.Data, " ")
 			joinedData += "\r\n"

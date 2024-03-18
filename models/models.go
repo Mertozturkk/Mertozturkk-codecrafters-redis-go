@@ -10,6 +10,7 @@ const (
 	Get   = "get"
 	Px    = "px"
 	Ping  = "ping"
+	INFO  = "INFO"
 )
 
 type CommandList map[string]bool
@@ -19,6 +20,7 @@ var Commands = CommandList{
 	"set":  true,
 	"get":  true,
 	"ping": true,
+	"INFO": true,
 }
 
 var SubCommands = CommandList{
