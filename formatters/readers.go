@@ -16,12 +16,13 @@ func ArrayReader(arr string, processCount int) (models.CliData, error) {
 
 	for i := 0; i < len(parsedData); i++ {
 		element := parsedData[i]
+		lowercaseElement := strings.ToLower(element)
 
-		if element == "" || strconv.Itoa(int(element[0])) == "" || element[0] == models.Bulk {
+		if lowercaseElement == "" || strconv.Itoa(int(element[0])) == "" || element[0] == models.Bulk {
 			continue
 		}
 
-		if _, ok := models.Commands[element]; ok {
+		if _, ok := models.Commands[lowercaseElement]; ok {
 			cmd = element
 			continue
 		}
