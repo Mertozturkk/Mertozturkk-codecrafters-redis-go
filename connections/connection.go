@@ -31,6 +31,7 @@ type NetManager struct {
 	broadcast  chan []byte
 	register   chan *Client
 	unregister chan *Client
+	role       string
 }
 
 func (manager *NetManager) Init() {
@@ -58,12 +59,13 @@ func (manager *NetManager) Init() {
 	}
 }
 
-func NewNetManager(port string) *NetManager {
+func NewNetManager(port string, role string) *NetManager {
 	manager := &NetManager{
 		clients:    make(map[*Client]bool),
 		broadcast:  make(chan []byte),
 		register:   make(chan *Client),
 		unregister: make(chan *Client),
+		role:       role,
 	}
 
 	listener, err := net.Listen("tcp", "localhost:"+port)
@@ -114,7 +116,11 @@ func HandleConnection(client *Client, store *storage.Store) {
 
 		switch cmd {
 		case models.INFO:
-			client.connection.Write([]byte("$11\r\nrole:master\r\n"))
+			if client.manager.role == "slave" {
+				client.connection.Write([]byte("$10\r\nrole:slave\r\n"))
+			} else {
+				client.connection.Write([]byte("$11\r\nrole:master\r\n"))
+			}
 		case models.Echo:
 			joinedData := strings.Join(cliData.Data, " ")
 			joinedData += "\r\n"
